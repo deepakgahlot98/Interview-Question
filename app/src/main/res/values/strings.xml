@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">MakeMyTripInterview</string>
+
+    <string name="bulleted_list">
+        <li>First item</li>\n
+        <li>Second item</li>\n
+        <li>Third item</li>
+    </string>
+
+    <string name="CRUST">Crust</string>
+    <string name="SIZE">Size</string>
+    <string name="cart">Add to Cart</string>
+
+</resources>
