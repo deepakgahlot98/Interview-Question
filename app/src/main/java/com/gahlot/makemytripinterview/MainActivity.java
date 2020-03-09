@@ -4,16 +4,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
-import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.os.Build;
 import android.os.Bundle;
-import android.view.MotionEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,7 +29,9 @@ import com.gahlot.makemytripinterview.utils.Utils;
 import com.gahlot.makemytripinterview.viewModel.RootViewModel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,8 +40,6 @@ public class MainActivity extends AppCompatActivity {
     TextView crust,size;
     Button cartButton;
     ListView crustList, sizeList, sauceList;
-    private ScrollView scrollView;
-    private LinearLayout linearLayout;
     private RootViewModel rootViewModel;
     private static Root root1 = new Root();
     private static List<Variations> variations = new ArrayList<>();
@@ -45,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
     private List<Variations> Size = new ArrayList<>();
     private List<Variations> Sauces = new ArrayList<>();
     private Utils utils = new Utils();
+    private Menu mToolbarMenu;
+    private Map<OrderItem,String> map = new HashMap<>();
+    private static int itemsInCart = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,14 +57,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         init();
-
-        scrollView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                findViewById(R.id.container).getParent().requestDisallowInterceptTouchEvent(false);
-                return false;
-            }
-        });
 
         rootViewModel = ViewModelProviders.of(this).get(RootViewModel.class);
         rootViewModel.getRoot().observe(this, new Observer<Root>() {
@@ -79,12 +76,14 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 for (int i = 0; i < crustList.getChildCount(); i++) {
                     if(position == i ){
+                        map.put(OrderItem.CRUST,crustList.getChildAt(i).toString());
                         crustList.getChildAt(i).setBackgroundColor(Color.parseColor("#ffce26"));
                         Size = utils.getSizes(utils.getMappedGroupIDVariationID(root1),exclude_lists,crustList.getItemAtPosition(position).toString(),root1.getVariants().getVariant_groups());
                         SizeCustomAdapter adapter2 = new SizeCustomAdapter(getApplicationContext(), Size);
                         sizeList.setAdapter(adapter2);
                     }else{
                         crustList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
+                        map.remove(OrderItem.CRUST);
                     }
                 }
 
@@ -96,12 +95,14 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 for (int i = 0; i < sizeList.getChildCount(); i++) {
                     if (position == i) {
+                        map.put(OrderItem.SIZE,sizeList.getChildAt(i).toString());
                         sizeList.getChildAt(i).setBackgroundColor(Color.parseColor("#ffce26"));
                         Sauces = utils.getSauces(utils.getMappedGroupIDVariationID(root1),exclude_lists,sizeList.getItemAtPosition(position).toString(),root1.getVariants().getVariant_groups());
                         SauceCustomAdapter adapter3 = new SauceCustomAdapter(getApplicationContext(), Sauces);
                         sauceList.setAdapter(adapter3);
                     } else{
                         sizeList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
+                        map.remove(OrderItem.SIZE);
                     }
                 }
             }
@@ -112,14 +113,60 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 for (int i=0; i < sauceList.getChildCount(); i++) {
                     if (position == i) {
+                        map.put(OrderItem.SAUCE,sauceList.getChildAt(i).toString());
                         sauceList.getChildAt(i).setBackgroundColor(Color.parseColor("#ffce26"));
                     } else {
                         sauceList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
+                        map.remove(OrderItem.SAUCE);
                     }
                 }
             }
         });
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    public boolean onOptionsItemSelected(MenuItem paramMenuItem) {
+        switch (paramMenuItem.getItemId()) {
+            case R.id.cart:
+                return true;
+            default:
+                return super.onOptionsItemSelected(paramMenuItem);
+        }
+    }
+
+    public boolean onPrepareOptionsMenu(Menu paramMenu) {
+        mToolbarMenu = paramMenu;
+        createCartBadge(0);
+        return super.onPrepareOptionsMenu(paramMenu);
+    }
+
+    private void createCartBadge(int paramInt) {
+        if (Build.VERSION.SDK_INT <= 15) {
+            return;
+        }
+        MenuItem cartItem = this.mToolbarMenu.findItem(R.id.cart);
+        LayerDrawable localLayerDrawable = (LayerDrawable) cartItem.getIcon();
+        Drawable cartBadgeDrawable = localLayerDrawable
+                .findDrawableByLayerId(R.id.ic_badge);
+        BadgeDrawable badgeDrawable;
+        if ((cartBadgeDrawable != null)
+                && ((cartBadgeDrawable instanceof BadgeDrawable))
+                && (paramInt < 10)) {
+            badgeDrawable = (BadgeDrawable) cartBadgeDrawable;
+        } else {
+            badgeDrawable = new BadgeDrawable(this);
+        }
+        badgeDrawable.setCount(paramInt);
+        localLayerDrawable.mutate();
+        localLayerDrawable.setDrawableByLayerId(R.id.ic_badge, badgeDrawable);
+        cartItem.setIcon(localLayerDrawable);
     }
 
     void init() {
@@ -129,19 +176,14 @@ public class MainActivity extends AppCompatActivity {
         crustList = findViewById(R.id.crust_list);
         sizeList = findViewById(R.id.size_list);
         sauceList = findViewById(R.id.sauce_list);
-        scrollView = findViewById(R.id.main_scrollview);
-        linearLayout = findViewById(R.id.container);
     }
 
-//    void orderCart(View view) {
-//        if (pizzaType .equals("Cheese burst") && pizzaSize.equals("Small")) {
-//            cartButton.setEnabled(false);
-//            Toast.makeText(getApplicationContext(),"This combination is not allowed.",Toast.LENGTH_SHORT).show();
-//        } else if (pizzaType .equals("Thick") && pizzaSize.equals(":Large")) {
-//            cartButton.setEnabled(false);
-//            Toast.makeText(this,"This combination is not allowed.",Toast.LENGTH_SHORT).show();
-//        } else {
-//            cartButton.setEnabled(true);
-//        }
-//    }
+    public void addToCart(View view) {
+        if (map.size() >= 3) {
+            itemsInCart = itemsInCart + 1;
+            createCartBadge(itemsInCart);
+        } else {
+            Toast.makeText(this,"Please select all the options for orderinng Pizza",Toast.LENGTH_SHORT).show();
+        }
+    }
 }

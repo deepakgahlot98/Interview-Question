@@ -76,7 +76,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentBottom="true"
-                android:text="@string/cart"/>
+                android:text="@string/cart"
+                android:onClick="addToCart"/>
 
             <View
                 android:layout_width="match_parent"

@@ -47,6 +47,7 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
             android:text="@string/cart"
+            android:onClick="addToCart"
             app:layout_constraintTop_toBottomOf="@+id/sauce_list"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"/>
