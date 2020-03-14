@@ -4,6 +4,6 @@ public enum OrderItem {
 
     CRUST,
     SIZE,
-    SAUCE;
+    SAUCE
 
 }

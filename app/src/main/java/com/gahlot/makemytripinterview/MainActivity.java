@@ -4,12 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
-import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +30,7 @@ import com.gahlot.makemytripinterview.utils.Utils;
 import com.gahlot.makemytripinterview.viewModel.RootViewModel;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Variations> Sauces = new ArrayList<>();
     private Utils utils = new Utils();
     private Menu mToolbarMenu;
-    private Map<OrderItem,String> map = new HashMap<>();
+    private static EnumMap<OrderItem,String> map = new EnumMap<>(OrderItem.class);
     private static int itemsInCart = 0;
 
     @Override
@@ -76,14 +78,14 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 for (int i = 0; i < crustList.getChildCount(); i++) {
                     if(position == i ){
-                        map.put(OrderItem.CRUST,crustList.getChildAt(i).toString());
+                        map.put(OrderItem.CRUST,crustList.getItemAtPosition(position).toString());
                         crustList.getChildAt(i).setBackgroundColor(Color.parseColor("#ffce26"));
                         Size = utils.getSizes(utils.getMappedGroupIDVariationID(root1),exclude_lists,crustList.getItemAtPosition(position).toString(),root1.getVariants().getVariant_groups());
                         SizeCustomAdapter adapter2 = new SizeCustomAdapter(getApplicationContext(), Size);
                         sizeList.setAdapter(adapter2);
                     }else{
                         crustList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
-                        map.remove(OrderItem.CRUST);
+                        //map.remove(OrderItem.CRUST);
                     }
                 }
 
@@ -95,14 +97,14 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 for (int i = 0; i < sizeList.getChildCount(); i++) {
                     if (position == i) {
-                        map.put(OrderItem.SIZE,sizeList.getChildAt(i).toString());
+                        map.put(OrderItem.SIZE,sizeList.getItemAtPosition(position).toString());
                         sizeList.getChildAt(i).setBackgroundColor(Color.parseColor("#ffce26"));
                         Sauces = utils.getSauces(utils.getMappedGroupIDVariationID(root1),exclude_lists,sizeList.getItemAtPosition(position).toString(),root1.getVariants().getVariant_groups());
                         SauceCustomAdapter adapter3 = new SauceCustomAdapter(getApplicationContext(), Sauces);
                         sauceList.setAdapter(adapter3);
                     } else{
                         sizeList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
-                        map.remove(OrderItem.SIZE);
+                        //map.remove(OrderItem.SIZE);
                     }
                 }
             }
@@ -113,11 +115,11 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 for (int i=0; i < sauceList.getChildCount(); i++) {
                     if (position == i) {
-                        map.put(OrderItem.SAUCE,sauceList.getChildAt(i).toString());
+                        map.put(OrderItem.SAUCE,sauceList.getItemAtPosition(position).toString());
                         sauceList.getChildAt(i).setBackgroundColor(Color.parseColor("#ffce26"));
                     } else {
                         sauceList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
-                        map.remove(OrderItem.SAUCE);
+                        //map.remove(OrderItem.SAUCE);
                     }
                 }
             }
@@ -135,6 +137,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem paramMenuItem) {
         switch (paramMenuItem.getItemId()) {
             case R.id.cart:
+                Intent intent = new Intent(this,OrderDetailActivity.class);
+                intent.putExtra("OrderItem",map);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(paramMenuItem);
@@ -179,11 +185,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void addToCart(View view) {
-        if (map.size() >= 3) {
+        if (!map.isEmpty()) {
             itemsInCart = itemsInCart + 1;
             createCartBadge(itemsInCart);
         } else {
             Toast.makeText(this,"Please select all the options for orderinng Pizza",Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "addToCart: size is " + map.size());
         }
     }
 }
