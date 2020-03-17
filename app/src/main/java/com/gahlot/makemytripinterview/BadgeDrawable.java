@@ -43,10 +43,24 @@ public class BadgeDrawable extends Drawable {
         float height = localRect.bottom - localRect.top;
         float circleRadius;
         circleRadius = Math.min(width, height)/4.0f+ 2.5F;
-        if (Integer.parseInt(this.mCount) < 10) { circleRadius = Math.min(width, height)/4.0f+ 2.5F; } else { circleRadius = Math.min(width, height)/4.0f+ 4.5F; } float circleX = width - circleRadius + 6.2F; float circleY = circleRadius - 9.5f; paramCanvas.drawCircle(circleX, circleY, circleRadius, this.mBadgePaint); this.mTextPaint.getTextBounds(this.mCount, 0, this.mCount.length(), this.mTxtRect); float textY = circleY + (this.mTxtRect.bottom - this.mTxtRect.top) / 2.0F; float textX = circleX; if (Integer.parseInt(this.mCount) >= 10) {
+        if (Integer.parseInt(this.mCount) < 10) {
+            circleRadius = Math.min(width, height)/4.0f+ 2.5F;
+        }
+        else {
+            circleRadius = Math.min(width, height)/4.0f+ 4.5F;
+        }
+        float circleX = width - circleRadius + 6.2F;
+        float circleY = circleRadius - 9.5f;
+        paramCanvas.drawCircle(circleX, circleY, circleRadius, this.mBadgePaint);
+        this.mTextPaint.getTextBounds(this.mCount, 0, this.mCount.length(), this.mTxtRect);
+        float textY = circleY + (this.mTxtRect.bottom - this.mTxtRect.top) / 2.0F;
+        float textX = circleX;
+
+        if (Integer.parseInt(this.mCount) >= 10) {
             textX = textX - 1.0F;
             textY = textY - 1.0F;
         }
+
         paramCanvas.drawText(this.mCount, textX, textY , this.mTextPaint);
     }
 
